@@ -21,7 +21,7 @@ public class MainContainer {
             Profile profileMain = new ProfileImpl(properties);
             AgentContainer mainContainer = runtime.createMainContainer(profileMain);
             AgentController agentController = mainContainer
-                    .createNewAgent("etudiant","org.example.MainContainer.AgentSender",new Object[]{});
+                    .createNewAgent("AgentSender","org.example.MainContainer.AgentSender",new Object[]{});
             //            l'agent demarer -> container demarer automatique
             agentController.start();
 
