@@ -1,44 +1,26 @@
-package org.example.MainContainer;
+package org.example.agents;
 
 import jade.core.AID;
 import jade.core.Agent;
-import jade.core.behaviours.Behaviour;
 import jade.core.behaviours.CyclicBehaviour;
 import jade.lang.acl.ACLMessage;
 import jade.wrapper.ControllerException;
 
-public class AgentSender extends Agent {
-    private SenderInterface senderInterface;
+public class AgentCentral extends Agent {
 
 //execute apres just instancier l'agent
 protected void setup() {
     System.out.println("Agent Sender started: " + this.getAID().getName());
 
-    // Initialize the interface and set it visible
-    senderInterface = new SenderInterface(this);
-    senderInterface.setVisible(true);
-
-    // Add a cyclic behaviour to listen for any replies or other messages
-    addBehaviour(new CyclicBehaviour() {
-        @Override
-        public void action() {
-            ACLMessage receivedMessage = receive();
-            if (receivedMessage != null) {
-                System.out.println("Sender received: " + receivedMessage.getContent());
-            } else {
-                block();
-            }
-        }
-    });
 }
 
-    // Method to send a message to AgentReceiver
+    // Method to send a message to AirAlgerieAgent
     public void sendMessageToReceiver(String messageContent) {
         ACLMessage message = new ACLMessage(ACLMessage.INFORM);
-        message.addReceiver(new AID("AgentReceiver", AID.ISLOCALNAME));
+        message.addReceiver(new AID("AirAlgerieAgent", AID.ISLOCALNAME));
         message.setContent(messageContent);
         send(message);
-        System.out.println("Message sent to AgentReceiver: " + messageContent);
+        System.out.println("Message sent to AirAlgerieAgent: " + messageContent);
     }
 
 
@@ -71,8 +53,6 @@ protected void setup() {
     @Override
     protected void takeDown() {
         System.out.println("Agent " + this.getAID().getName() + " is terminating.");
-        if (senderInterface != null) {
-            senderInterface.dispose();
-        }
+
     }
 }
