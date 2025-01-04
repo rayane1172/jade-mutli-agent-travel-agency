@@ -21,6 +21,7 @@ public class EmiratesAgent extends Agent {
     private List<Flight> availableFlights = new ArrayList<>();
     private ACLMessage flightReceived; // Stocke le premier message REQUEST
     private Flight flight_found;
+    VolRequest volRequestReceived;
 
     @Override
     protected void setup() {
@@ -69,6 +70,7 @@ public class EmiratesAgent extends Agent {
                             // Gérer l'acceptation de la proposition
                             ACLMessage reply = message.createReply();
                             reply.setPerformative(ACLMessage.INFORM);
+                            flight_found.decreaseSeats(volRequestReceived.getNumTickets());
                             System.out.println(".....send flight_found to central agent --> "+flight_found);
                             String flightJson = serializeVolRequest(flight_found);
                             reply.setContent(flightJson);
@@ -110,7 +112,7 @@ public class EmiratesAgent extends Agent {
         gsonBuilder.setDateFormat(sdf.toPattern()); // Set the date format as dd/MM/yyyy
         Gson gson = gsonBuilder.create();
 
-        VolRequest volRequestReceived = gson.fromJson(jsonStringMsg, VolRequest.class);
+        volRequestReceived = gson.fromJson(jsonStringMsg, VolRequest.class);
         // Check if the requested flight is available
         flight_found = checkFlightAvailability(volRequestReceived); // Get the flight object if available
 //        boolean isFlightAvailable = checkFlightAvailability(volRequestReceived);
@@ -148,7 +150,7 @@ public class EmiratesAgent extends Agent {
                 // Serialize the flight to JSON
                 flight_found.setPrice(counterOffer); //todo
                 String flightJson = serializeVolRequest(flight_found);
-                reply.setPerformative(ACLMessage.ACCEPT_PROPOSAL);
+                reply.setPerformative(ACLMessage.INFORM);
 //                System.out.println("flight_choosed Json sended with accept propsal");
                 reply.setContent(flightJson);
             } else {

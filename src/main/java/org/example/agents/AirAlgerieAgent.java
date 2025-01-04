@@ -21,6 +21,7 @@ public class AirAlgerieAgent extends Agent {
     private List<Flight> availableFlights = new ArrayList<>();
     private ACLMessage flightReceived; // Stocke le premier message REQUEST
     private Flight flight_found;
+    VolRequest volRequestReceived;
 
     @Override
     protected void setup() {
@@ -69,7 +70,7 @@ public class AirAlgerieAgent extends Agent {
                             // Gérer l'acceptation de la proposition
                             ACLMessage reply = message.createReply();
                             reply.setPerformative(ACLMessage.INFORM);
-                            System.out.println(".....send flight_found to central agent --> "+flight_found);
+                            flight_found.decreaseSeats(volRequestReceived.getNumTickets());
                             String flightJson = serializeVolRequest(flight_found);
                             System.out.println("-----> "+flightJson);
                             reply.setContent(flightJson);
@@ -88,7 +89,7 @@ public class AirAlgerieAgent extends Agent {
     }
 
     private void initializeAvailableFlights() {
-        availableFlights.add(new Flight("AH101", "Algiers", "Paris", "15/01/2025",2,"AirAlgerie",0));
+        availableFlights.add(new Flight("AH101", "Algiers", "Paris", "15/01/2025",4,"AirAlgerie",0));
         availableFlights.add(new Flight("AH102", "Algiers", "London", "16/01/2025",50,"AirAlgerie",0));
         availableFlights.add(new Flight("AH103", "Oran", "Madrid", "17/01/2025",10,"AirAlgerie",0));
         availableFlights.add(new Flight("AH104", "Algiers", "New York", "20/01/2025",30,"AirAlgerie",0));
@@ -102,14 +103,10 @@ public class AirAlgerieAgent extends Agent {
         gsonBuilder.setDateFormat(sdf.toPattern()); // Set the date format as dd/MM/yyyy
         Gson gson = gsonBuilder.create();
 
-        VolRequest volRequestReceived = gson.fromJson(jsonStringMsg, VolRequest.class);
-//        System.out.println("Air Algerie received flight request: " + volRequestReceived);
-
+        volRequestReceived = gson.fromJson(jsonStringMsg, VolRequest.class);
         // Check if the requested flight is available
-        flight_found = checkFlightAvailability(volRequestReceived); // Get the flight object if available
-//        boolean isFlightAvailable = checkFlightAvailability(volRequestReceived);
+        flight_found = checkFlightAvailability(volRequestReceived);
         ACLMessage reply = message.createReply();
-
         if (flight_found != null) {
             // Respond with the initial price proposal if the flight is available
             reply.setPerformative(ACLMessage.PROPOSE);
@@ -122,7 +119,6 @@ public class AirAlgerieAgent extends Agent {
             reply.setPerformative(ACLMessage.REFUSE);
             reply.setContent("Requested flight not available or no seats left !!");
             send(reply);
-//            System.out.println("Air Algerie: Requested flight not available.");
         }
     }
 
@@ -134,7 +130,7 @@ public class AirAlgerieAgent extends Agent {
                 }
             }
         }
-        return null; // Flight is not available or no seats left
+        return null;
     }
 
     private void handleCounterOffer(ACLMessage message) {
@@ -154,7 +150,7 @@ public class AirAlgerieAgent extends Agent {
                 flight_found.setPrice(counterOffer); //todo
 
                 String flightJson = serializeVolRequest(flight_found);
-                reply.setPerformative(ACLMessage.ACCEPT_PROPOSAL);
+                reply.setPerformative(ACLMessage.INFORM);
 //                System.out.println("flight_choosed Json sended with accept propsal");
                 reply.setContent(flightJson);
             } else {

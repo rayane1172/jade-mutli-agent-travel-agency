@@ -21,6 +21,7 @@ public class QatarAirwaysAgent extends Agent {
     private List<Flight> availableFlights = new ArrayList<>();
     private ACLMessage flightReceived; // Stocke le premier message REQUEST
     private Flight flight_found;
+    VolRequest volRequestReceived;
 
     @Override
     protected void setup() {
@@ -69,6 +70,7 @@ public class QatarAirwaysAgent extends Agent {
                             // Gérer l'acceptation de la proposition
                             ACLMessage reply = message.createReply();
                             reply.setPerformative(ACLMessage.INFORM);
+                            flight_found.decreaseSeats(volRequestReceived.getNumTickets());
                             System.out.println(".....send flight_found to central agent --> "+flight_found);
                             String flightJson = serializeVolRequest(flight_found);
                             reply.setContent(flightJson);
@@ -103,7 +105,6 @@ public class QatarAirwaysAgent extends Agent {
         Gson gson = gsonBuilder.create();
 
         VolRequest volRequestReceived = gson.fromJson(jsonStringMsg, VolRequest.class);
-
         // Check if the requested flight is available
         flight_found = checkFlightAvailability(volRequestReceived); // Get the flight object if available
         ACLMessage reply = message.createReply();
@@ -142,15 +143,14 @@ public class QatarAirwaysAgent extends Agent {
         if (counterOffer >= minimumPrice) {
             // Accept the counteroffer if it's above or equal to the minimum price
             ACLMessage reply = message.createReply();
-
-            VolRequest volRequestReceived = new Gson().fromJson(flightReceived.getContent(), VolRequest.class);
+            volRequestReceived = new Gson().fromJson(flightReceived.getContent(), VolRequest.class);
             // decrease the number of available seats for the flight
             boolean isSuccess = flight_found.decreaseSeats(volRequestReceived.getNumTickets());
             if (isSuccess) {
                 // Serialize the flight to JSON
                 flight_found.setPrice(counterOffer); //todo
                 String flightJson = serializeVolRequest(flight_found);
-                reply.setPerformative(ACLMessage.ACCEPT_PROPOSAL);
+                reply.setPerformative(ACLMessage.INFORM);
 //                System.out.println("flight_choosed Json sended with accept propsal");
                 reply.setContent(flightJson);
             } else {
@@ -176,7 +176,7 @@ public class QatarAirwaysAgent extends Agent {
             reply.setPerformative(ACLMessage.REFUSE);
             reply.setContent("Negotiation failed: Maximum rounds reached.");
             send(reply);
-            takeDown();
+//            takeDown();
         }
     }
 

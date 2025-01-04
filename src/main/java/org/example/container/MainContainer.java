@@ -75,7 +75,7 @@ public class MainContainer extends Application {
     public void start(Stage stage) {
         startJADE(); // Start JADE runtime
 
-        stage.setTitle("Interface Client");
+        stage.setTitle("FIND YOUR FLIGHT");
 
         BorderPane borderPane = new BorderPane();
         VBox mainContainer = new VBox(10);
@@ -131,7 +131,7 @@ public class MainContainer extends Application {
                     showAlert(Alert.AlertType.WARNING, "Veuillez remplir tous les champs requis !");
                     return;
                 }
-
+                flightTable.getItems().clear();
                 LocalDate departureLocalDate = datePickerDeparture.getValue();
                 SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy");
                 String formattedDepartureDate = dateFormat.format(Date.from(departureLocalDate.atStartOfDay(ZoneId.systemDefault()).toInstant()));
@@ -186,6 +186,14 @@ public class MainContainer extends Application {
         departureColumn.setCellValueFactory(cellData ->
                 new SimpleStringProperty(cellData.getValue().getDate())); // Wrap the String in SimpleStringProperty
 
+        TableColumn<Flight, String> TotalSeats = new TableColumn<>("Total Seats");
+        TotalSeats.setCellValueFactory(cellData ->
+                new SimpleStringProperty(String.format("%d",cellData.getValue().getTotalSeats()))); // Wrap the String in SimpleStringProperty
+
+        TableColumn<Flight, String> AirLine = new TableColumn<>("AirLine");
+        AirLine.setCellValueFactory(cellData ->
+                new SimpleStringProperty(cellData.getValue().getAirlineName())); // Wrap the String in SimpleStringProperty
+
         TableColumn<Flight, String> priceColumn = new TableColumn<>("Prix");
         priceColumn.setCellValueFactory(cellData ->
                 new SimpleStringProperty(String.format("%.2f", cellData.getValue().getPrice()))); // Format to 2 decimal places
@@ -198,6 +206,8 @@ public class MainContainer extends Application {
         flightTable.getColumns().add(fromColumn);
         flightTable.getColumns().add(toColumn);
         flightTable.getColumns().add(departureColumn);
+        flightTable.getColumns().add(TotalSeats);
+        flightTable.getColumns().add(AirLine);
         flightTable.getColumns().add(priceColumn);
 
         // Add TableView to layout
@@ -237,11 +247,6 @@ public class MainContainer extends Application {
         String message = guiEvent.getParameter(0).toString();
         messageArea.appendText(message + "\n------\n");
     }
-
-//    // Update the TableView with the flight data received
-//    public void updateFlightTable(Flight flight) {
-//        flightTable.getItems().add(flight);
-//    }
 
     public void setCentralAgent(AgentCentral agent) {
         this.centralAgent = agent;

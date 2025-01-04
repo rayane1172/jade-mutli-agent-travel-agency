@@ -43,7 +43,7 @@ public class AgentCentral extends GuiAgent {
 
                 ACLMessage message = receive(template);
                 if (message != null) {
-                    String senderName = message.getSender().getLocalName(); // Nom de l'expéditeur
+                    String senderName = message.getSender().getLocalName();
 
                     if (message.getPerformative() == ACLMessage.REFUSE) {
                         // Notification d'un refus
@@ -55,7 +55,6 @@ public class AgentCentral extends GuiAgent {
                         gui.airLineMessage(guiEvent);
 
                     } else if (message.getPerformative() == ACLMessage.PROPOSE) {
-                        // Gestion de la négociation
                         double proposedPrice = Double.parseDouble(message.getContent());
 //                        System.out.println("Negotiation started with " + senderName + ": Proposed price = " + proposedPrice);
 
@@ -67,7 +66,6 @@ public class AgentCentral extends GuiAgent {
                         // Gestion de la négociation
                         handleNegotiation(message, senderName, proposedPrice);
                     }else if (message.getPerformative() == ACLMessage.INFORM) {
-//                        System.out.println("im in the case of inform message : ");
                         handleNegotiation(message, senderName);
                     }
                 } else {
@@ -77,10 +75,6 @@ public class AgentCentral extends GuiAgent {
         });
     }
 
-    public Flight deserializeFlightRequest(String flightJson) {
-        Gson gson = new Gson();
-        return gson.fromJson(flightJson, Flight.class);  // Convert JSON string back to Flight object
-    }
 
     private void handleNegotiation(ACLMessage message, String senderName) {
         if (message.getPerformative() == ACLMessage.INFORM) {
@@ -199,4 +193,11 @@ public class AgentCentral extends GuiAgent {
         Gson gson = new Gson();
         return gson.toJson(volRequest);
     }
+
+    public Flight deserializeFlightRequest(String flightJson) {
+        Gson gson = new Gson();
+        return gson.fromJson(flightJson, Flight.class);  // Convert JSON string back to Flight object
+    }
 }
+
+
