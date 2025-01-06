@@ -18,8 +18,8 @@ import java.util.List;
 public class AgentCentral extends GuiAgent {
 
     private MainContainer gui;
-    private int negotiationRounds = 0; // Nombre de tours de négociation
-    private double clientBudget = 0; // Budget du client
+    private int negotiationRounds = 0;
+    private double clientBudget = 0;
 
     @Override
     protected void setup() {
@@ -44,11 +44,8 @@ public class AgentCentral extends GuiAgent {
                 ACLMessage message = receive(template);
                 if (message != null) {
                     String senderName = message.getSender().getLocalName();
-
                     if (message.getPerformative() == ACLMessage.REFUSE) {
                         // Notification d'un refus
-//                        System.out.println("Refusal received from " + senderName + ": " + message.getContent());
-
                         // Envoyer un événement à l'interface graphique
                         GuiEvent guiEvent = new GuiEvent(this, 1);
                         guiEvent.addParameter("Refusal from " + senderName + ": " + message.getContent());
@@ -75,11 +72,11 @@ public class AgentCentral extends GuiAgent {
         });
     }
 
-
     private void handleNegotiation(ACLMessage message, String senderName) {
         if (message.getPerformative() == ACLMessage.INFORM) {
             String flightJsonReceived = message.getContent();
             Flight flight_received = deserializeFlightRequest(flightJsonReceived);
+            System.out.println("=----> sender is -> "+message.getSender().getName());
 
             // Notify the GUI to update the table
             GuiEvent guiEvent = new GuiEvent(this, 1);
@@ -124,7 +121,6 @@ public class AgentCentral extends GuiAgent {
             refuseMessage.setContent("Negotiation failed after 3 rounds with " + senderName);
             send(refuseMessage);
 
-            // Notifier l'interface graphique
             GuiEvent guiEvent = new GuiEvent(this, 1);
             guiEvent.addParameter("Negotiation failed after 3 rounds with " + senderName);
             gui.airLineMessage(guiEvent);

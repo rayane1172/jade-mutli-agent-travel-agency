@@ -1,0 +1,40 @@
+/* styles.css */
+.root {
+    -fx-font-family: 'Arial';
+}
+
+.table-view {
+    -fx-background-color: white;
+    -fx-background-radius: 5px;
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 10, 0, 0, 0);
+}
+
+.table-view .column-header {
+    -fx-background-color: #2196F3;
+    -fx-text-fill: white;
+    -fx-font-weight: bold;
+    -fx-padding: 10px;
+}
+
+.table-view .table-cell {
+    -fx-padding: 10px;
+    -fx-alignment: center-left;
+}
+
+.table-row-cell:odd {
+    -fx-background-color: #f8f9fa;
+}
+
+.table-row-cell:selected {
+    -fx-background-color: #bbdefb;
+}
+
+.text-area {
+    -fx-background-radius: 5px;
+    -fx-border-radius: 5px;
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 5, 0, 0, 0);
+}
+
+.button:hover {
+    -fx-cursor: hand;
+}

@@ -25,7 +25,7 @@ public class AirFranceAgent extends Agent {
 
     @Override
     protected void setup() {
-        System.out.println("Air Algerie Agent started: " + this.getAID().getName());
+        System.out.println("Air FRANCE Agent started: " + this.getAID().getName());
 
         // Add some sample flights to the availableFlights list
         initializeAvailableFlights();
@@ -58,12 +58,12 @@ public class AirFranceAgent extends Agent {
 
                         case ACLMessage.CFP:
                             // Gérer la contre-offre de AgentCentral
-                            handleCounterOffer(message);
+                            handleOffer(message);
                             break;
 
                         case ACLMessage.PROPOSE:
                             // Gérer la proposition (contre-offre de AgentCentral)
-                            handleCounterOffer(message);
+                            handleOffer(message);
                             break;
 
                         case ACLMessage.ACCEPT_PROPOSAL:
@@ -113,7 +113,7 @@ public class AirFranceAgent extends Agent {
         gsonBuilder.setDateFormat(sdf.toPattern()); // Set the date format as dd/MM/yyyy
         Gson gson = gsonBuilder.create();
 
-        VolRequest volRequestReceived = gson.fromJson(jsonStringMsg, VolRequest.class);
+         volRequestReceived = gson.fromJson(jsonStringMsg, VolRequest.class);
         // Check if the requested flight is available
         flight_found = checkFlightAvailability(volRequestReceived); // Get the flight object if available
 //        boolean isFlightAvailable = checkFlightAvailability(volRequestReceived);
@@ -124,7 +124,7 @@ public class AirFranceAgent extends Agent {
             reply.setPerformative(ACLMessage.PROPOSE);
             reply.setContent(String.valueOf(initialPrice)); // Send the initial price
             send(reply);
-            System.out.println("Air Algerie proposed initial price: " + initialPrice);
+            System.out.println("Air FRANCE proposed initial price: " + initialPrice);
             flight_found.setPrice(initialPrice); //todo
         } else {
             // Respond with a REFUSE message if the flight is not available
@@ -135,12 +135,12 @@ public class AirFranceAgent extends Agent {
         }
     }
 
-    private void handleCounterOffer(ACLMessage message) {
+    private void handleOffer(ACLMessage message) {
         // Parse the counteroffer price from the message
-        double counterOffer = Double.parseDouble(message.getContent());
-        System.out.println("Air Algerie received counteroffer: " + counterOffer);
+        double offre = Double.parseDouble(message.getContent());
+        System.out.println("Air FRANCE received counteroffer: " + offre);
 
-        if (counterOffer >= minimumPrice) {
+        if (offre >= minimumPrice) {
             // Accept the counteroffer if it's above or equal to the minimum price
             ACLMessage reply = message.createReply();
 
@@ -149,7 +149,7 @@ public class AirFranceAgent extends Agent {
             boolean isSuccess = flight_found.decreaseSeats(volRequestReceived.getNumTickets());
             if (isSuccess) {
                 // Serialize the flight to JSON
-                flight_found.setPrice(counterOffer); //todo
+                flight_found.setPrice(offre); //todo
                 String flightJson = serializeVolRequest(flight_found);
                 reply.setPerformative(ACLMessage.INFORM);
 //                System.out.println("flight_choosed Json sended with accept propsal");
@@ -163,13 +163,13 @@ public class AirFranceAgent extends Agent {
         } else if (negotiationRounds < 3) {
             // Reduce the price and make a new proposal
             negotiationRounds++;
-            double newPrice = Math.max(minimumPrice, counterOffer * 0.9); // Reduce counteroffer by 10%
+            double newPrice = Math.max(minimumPrice, offre * 0.9); // Reduce counteroffer by 10%
 
             ACLMessage reply = message.createReply();
             reply.setPerformative(ACLMessage.PROPOSE);
             reply.setContent(String.valueOf(newPrice)); // Send the new price
             send(reply);
-            System.out.println("Air Algerie proposed new price: " + newPrice);
+            System.out.println("Air FRANCE proposed new price: " + newPrice);
             flight_found.setPrice(newPrice); //todo
         } else {
             // Terminate negotiation if maximum rounds are reached
@@ -177,7 +177,7 @@ public class AirFranceAgent extends Agent {
             reply.setPerformative(ACLMessage.REFUSE);
             reply.setContent("Negotiation failed: Maximum rounds reached.");
             send(reply);
-            takeDown();
+//            takeDown();
         }
     }
     private String serializeVolRequest(Flight flightReceived) {

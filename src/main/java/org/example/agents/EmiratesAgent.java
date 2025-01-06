@@ -58,12 +58,12 @@ public class EmiratesAgent extends Agent {
 
                         case ACLMessage.CFP:
                             // Gérer la contre-offre de AgentCentral
-                            handleCounterOffer(message);
+                            handleOffer(message);
                             break;
 
                         case ACLMessage.PROPOSE:
                             // Gérer la proposition (contre-offre de AgentCentral)
-                            handleCounterOffer(message);
+                            handleOffer(message);
                             break;
 
                         case ACLMessage.ACCEPT_PROPOSAL:
@@ -101,7 +101,7 @@ public class EmiratesAgent extends Agent {
                 }
             }
         }
-        return null; // Flight is not available or no seats left
+        return null;
     }
 
     private void handleFlightRequest(ACLMessage message) {
@@ -123,7 +123,7 @@ public class EmiratesAgent extends Agent {
             reply.setPerformative(ACLMessage.PROPOSE);
             reply.setContent(String.valueOf(initialPrice)); // Send the initial price
             send(reply);
-            System.out.println("Air Algerie proposed initial price: " + initialPrice);
+            System.out.println("Air EMIRATES proposed initial price: " + initialPrice);
             flight_found.setPrice(initialPrice); //todo
         } else {
             // Respond with a REFUSE message if the flight is not available
@@ -134,24 +134,23 @@ public class EmiratesAgent extends Agent {
         }
     }
 
-    private void handleCounterOffer(ACLMessage message) {
+    private void handleOffer(ACLMessage message) {
         // Parse the counteroffer price from the message
-        double counterOffer = Double.parseDouble(message.getContent());
-        System.out.println("Air Algerie received counteroffer: " + counterOffer);
+        double offer = Double.parseDouble(message.getContent());
+        System.out.println("Air EMIRATES received counteroffer: " + offer);
 
-        if (counterOffer >= minimumPrice) {
+        if (offer >= minimumPrice) {
             // Accept the counteroffer if it's above or equal to the minimum price
             ACLMessage reply = message.createReply();
 
-            VolRequest volRequestReceived = new Gson().fromJson(flightReceived.getContent(), VolRequest.class);
+            volRequestReceived = new Gson().fromJson(flightReceived.getContent(), VolRequest.class);
             // decrease the number of available seats for the flight
             boolean isSuccess = flight_found.decreaseSeats(volRequestReceived.getNumTickets());
             if (isSuccess) {
                 // Serialize the flight to JSON
-                flight_found.setPrice(counterOffer); //todo
+                flight_found.setPrice(offer); //todo
                 String flightJson = serializeVolRequest(flight_found);
                 reply.setPerformative(ACLMessage.INFORM);
-//                System.out.println("flight_choosed Json sended with accept propsal");
                 reply.setContent(flightJson);
             } else {
                 reply.setPerformative(ACLMessage.REFUSE);
@@ -162,13 +161,13 @@ public class EmiratesAgent extends Agent {
         } else if (negotiationRounds < 3) {
             // Reduce the price and make a new proposal
             negotiationRounds++;
-            double newPrice = Math.max(minimumPrice, counterOffer * 0.9); // Reduce counteroffer by 10%
+            double newPrice = Math.max(minimumPrice, offer * 0.9); // Reduce counteroffer by 10%
 
             ACLMessage reply = message.createReply();
             reply.setPerformative(ACLMessage.PROPOSE);
             reply.setContent(String.valueOf(newPrice)); // Send the new price
             send(reply);
-            System.out.println("Air Algerie proposed new price: " + newPrice);
+            System.out.println("Air EMIRATES proposed new price: " + newPrice);
             flight_found.setPrice(newPrice); //todo
         } else {
             // Terminate negotiation if maximum rounds are reached
@@ -176,7 +175,7 @@ public class EmiratesAgent extends Agent {
             reply.setPerformative(ACLMessage.REFUSE);
             reply.setContent("Negotiation failed: Maximum rounds reached.");
             send(reply);
-            takeDown();
+//            takeDown();
         }
     }
     private String serializeVolRequest(Flight flightReceived) {
